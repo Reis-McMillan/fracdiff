@@ -7,8 +7,8 @@ from numpy.testing import assert_array_equal
 from numpy.testing import assert_equal
 from numpy.testing import assert_raises
 
-from fracdiff import fdiff
-from fracdiff.fdiff import fdiff_coef
+from src.fracdiff import fdiff
+from src.fracdiff.fdiff import fdiff_coef
 
 
 class TestFdiff:

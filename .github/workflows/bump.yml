@@ -1,25 +1,47 @@
 name: Bump
 on:
   create:
-    branches:
   workflow_dispatch:
+
 jobs:
   bump:
     name: Bump
     runs-on: ubuntu-latest
-    if: ${{ contains(github.ref, 'release/') }}
+    # Only run if the branch name starts with release/
+    if: startsWith(github.ref, 'refs/heads/release/')
+    
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
-      - run: pip install poetry
-      - name: Bump version
-        run: git branch --show-current | sed 's|release/||' | xargs poetry version | { printf '::set-output name=PR_TITLE::'; cat; }
-        id: bump
-      - name: Create pull request
-        uses: peter-evans/create-pull-request@v3
+      - uses: actions/checkout@v4
         with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Extract version from branch name
+        id: get_version
+        run: |
+          # Takes 'release/1.1.0' and turns it into '1.1.0'
+          VERSION=$(echo "${{ github.ref_name }}" | sed 's|release/||')
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+          echo "PR_TITLE=Bump version to $VERSION" >> $GITHUB_OUTPUT
+
+      - name: Update pyproject.toml version
+        run: |
+          # Uses sed to find 'version = "..."' and replace the value
+          VERSION=${{ steps.get_version.outputs.VERSION }}
+          sed -i "s/^version = \".*\"/version = \"$VERSION\"/" pyproject.toml
+          echo "Updated pyproject.toml to version $VERSION"
+
+      - name: Create pull request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
           author: GitHub Actions <action@github.com>
-          commit-message: ${{ steps.bump.outputs.PR_TITLE }}
-          delete-branch: true
-          branch-suffix: short-commit-hash
-          title: ${{ steps.bump.outputs.PR_TITLE }}
+          commit-message: "chore: bump version to ${{ steps.get_version.outputs.VERSION }}"
+          delete-branch: false
+          title: ${{ steps.get_version.outputs.PR_TITLE }}
+          body: "Automated version bump based on release branch name."
+          branch: "version-bump-${{ steps.get_version.outputs.VERSION }}"

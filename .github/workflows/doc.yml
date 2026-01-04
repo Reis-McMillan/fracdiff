@@ -4,27 +4,42 @@ on:
     branches:
       - main
       - develop
-      - release/*
+      - 'release/**' # Updated glob syntax
   pull_request:
     branches:
       - main
       - develop
-      - release/*
+      - 'release/**'
   workflow_dispatch:
+
 jobs:
   doc:
-    name: Doc
+    name: Build and Deploy Documentation
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.9'
-      - run: pip install poetry && poetry install --extras torch --extras scikit-learn
-      - run: cd docs && make html
-      - name: Deploy
-        uses: peaceiris/actions-gh-pages@v3
-        if: ${{ github.ref == 'refs/heads/main' }}
+          python-version: '3.13'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          # Install the package with extras + sphinx for building docs
+          pip install .[sklearn,torch]
+          pip install sphinx sphinx_rtd_theme # Add any other doc themes you use
+
+      - name: Build HTML
+        run: |
+          cd docs
+          make html
+
+      - name: Deploy to GitHub Pages
+        # Only deploy when pushing to the main branch
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./docs/build/html

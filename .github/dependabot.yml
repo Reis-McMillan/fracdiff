@@ -1,6 +1,17 @@
 version: 2
 updates:
+  # Maintain Python dependencies defined in pyproject.toml
   - package-ecosystem: "pip"
     directory: "/"
     schedule:
-      interval: "daily"
+      interval: "weekly" # Daily can be noisy; weekly is often preferred for libraries
+    open-pull-requests-limit: 5
+    # Ensure it looks for updates compatible with your Python range
+    versioning-strategy: increase
+
+  # Maintain GitHub Action versions (e.g., checkout@v4, setup-python@v5)
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 3
