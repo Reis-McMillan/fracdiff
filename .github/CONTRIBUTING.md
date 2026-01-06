@@ -13,8 +13,8 @@ This project supports **Python 3.8 through 3.13**. To ensure compatibility acros
 
 First, clone the repository and install the package in editable mode with development dependencies:
 
-```bash
-git clone [https://github.com/Reis-McMillan/fracdiff.git](https://github.com/Reis-McMillan/fracdiff.git)
+```sh
+git clone [https://github.com/Reis-McMillan/fracdiff-modern.git](https://github.com/Reis-McMillan/fracdiff-modern.git)
 cd fracdiff
 pip install -e ".[dev,sklearn,torch]"
 ```
@@ -36,7 +36,7 @@ tox -e py313
 
 - Run the linter (Flake 8):
 ```bash
-tox -e py313
+tox -e lint
 ```
 
 ### 3. Pull Request Guidelines
